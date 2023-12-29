@@ -6,7 +6,7 @@ export const Modal = ({closeModal}) => {
 
     useEffect(() => {
         document.addEventListener('keydown', closeModal)
-    }, [])
+    }, [ closeModal])
     
     useEffect(() => {
         return () => {
