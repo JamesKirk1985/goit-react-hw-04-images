@@ -2,7 +2,7 @@ import {  useEffect } from 'react'
 
 import css from './Modal.module.css'
 
-export const Modal = ({closeModal}) => {
+export const Modal = ({closeModal, src}) => {
 
     useEffect(() => {
         document.addEventListener('keydown', closeModal)
@@ -17,9 +17,9 @@ export const Modal = ({closeModal}) => {
     return (
         <>
             <div className={css.Overlay}
-                onClick={this.props.close}>
+                onClick={closeModal}>
             <div className={ css.Modal}>
-            <img src={this.props.src } alt="" />
+            <img src={src } alt="" />
             </div>
             </div>
         </>
