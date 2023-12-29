@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import { ImageGallery } from "../ImageGallery/ImageGallery";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { Modal } from '../Modal/Modal'
@@ -9,80 +9,69 @@ import { imgGetFunction } from 'Api/Api.js'
 
 import css from "./App.module.css"
 
-export class App extends Component {
-  state = {
-    images: [],
-    isLoading: false,
-    showModal: false,
-    searchKey: '',
-    page: 1   
-  }
 
-  componentDidUpdate(prevProps, prevState) {    
-    if (this.state.searchKey !== prevState.searchKey || this.state.page !== prevState.page) {      
-      this.getImages(this.state.searchKey, this.state.page)       
-    }
-  }
+export const App = () => {
+  
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [searchKey, setSearchKey] = useState('');
+  const [page, setPage] = useState(1);
+  const [loadMore, setLoadMore] = useState(false);
+  const [bigImage, setBigImage] = useState('')
 
-  getImages = async (key, page) => {    
-      try {
-      this.setState({
-        isLoading: true
-      })
+  useEffect(() => {
+    if (!(searchKey==='')) {
+      getImages(searchKey, page)}      
+    }, [page, searchKey])
+      
+  
+  async function getImages (key, page) {    
+    try {
+      setIsLoading(true)        
       const data = await imgGetFunction(key, page)   
-        this.setState((prevState) => ({
-          images: [...prevState.images, ...data.hits],
-          loadMore: this.state.page < Math.ceil(data.totalHits / 12 )        
-        }) )    
+        setImages((prev) => ([...prev, ...data.hits]))    
+        setLoadMore(page < Math.ceil(data.totalHits / 12 ))        
     } catch (error) {
       console.log(error.message)
     } finally {
-      this.setState({ isLoading: false })
+      setIsLoading(false)
     }
-
   }
 
-  onSubmit = (event) => {    
+  function onSubmit (event) {    
     event.preventDefault();
-    if (event.target.inputKey.value === this.state.searchKey) 
-      {return}
-    this.setState({
-      images:[],
-      page: 1,
-      searchKey: event.target.inputKey.value
-      })
+    if (event.target.inputKey.value === searchKey) 
+    { return }
+    setImages([]);
+    setPage(1);
+    setSearchKey(event.target.inputKey.value)    
   }
 
-  loadMoreFunc = async () => {
-    this.setState({ page: this.state.page + 1 })
+  function loadMoreFunc () {
+    setPage((prev)=>(prev+1))
   }
 
-
-  showModal = (evt) => {   
-      this.setState({
-        showModal: true,
-        bigImage: evt.target.alt
-      })
-    }
-
-    closeModal = (event) => {
+  function showModalFunc (evt) {   
+    setShowModal(true);
+    setBigImage(evt.target.alt)     
+  }
+  
+  function closeModal (event) {
       if (event.key === 'Escape' || !event.target.closest('IMG')) {
-        this.setState({ showModal: false })
+        setShowModal(false)
       }
     }
 
-    render() {
-      const { images, showModal, bigImage, isLoading, loadMore } = this.state;
-      return (
+  return (
         <div className={css.App}>
-          <SearchBar onSubmit={this.onSubmit} />
-          <ImageGallery images={images} showModal={this.showModal}>
+          <SearchBar onSubmit={onSubmit} />
+          <ImageGallery images={images} showModal={showModalFunc}>
           </ImageGallery >
-          {images.length>0 && loadMore && <Button loadMoreFunc={this.loadMoreFunc} />}          
-          {showModal && <Modal src={bigImage} close={this.closeModal} />}
+          {images.length>0 && loadMore && <Button loadMoreFunc={loadMoreFunc} />}          
+          {showModal && <Modal src={bigImage} closeModal={closeModal} />}
           {isLoading && <Loader />}
         </div>
-      )
-    }
-  }
-
+      )  
+}
+  

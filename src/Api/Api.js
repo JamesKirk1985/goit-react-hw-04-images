@@ -12,6 +12,8 @@ export async function imgGetFunction(searchKey, page) {
     per_page: 12,
     page,
   });
+
   const response = await axios(`${BASE_URL}?${params}`);
+
   return response.data;
 }
